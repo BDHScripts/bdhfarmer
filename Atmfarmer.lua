@@ -1,4 +1,4 @@
---Services
+
 local HttpService = game:GetService("HttpService")
 local request = http_request or request or HttpPost or syn.request
 local Players = game:GetService("Players")
@@ -799,126 +799,134 @@ local function itemCount(itemName, player)
     return count
 end
 
---KnifeFarm
+---KnifeFarm
 local function knifeFarmFunction()
-	knifeFarm = not knifeFarm
-	if knifeFarm == true then
-		
+    knifeFarm = not knifeFarm
+    if knifeFarm == true then
+        startStopTimer(true)
+        cancelVelocity(true)
 
-		startStopTimer(true)
-		cancelVelocity(true)
+        while not isCharacterLoaded(PLAYER) do task.wait() end
+        playerOldPosition = PLAYER.Character.HumanoidRootPart.CFrame
+        print(playerOldPosition)
+        while knifeFarm == true do
+            local character = PLAYER.Character or PLAYER.CharacterAdded:Wait()
 
-		while not isCharacterLoaded(PLAYER) do task.wait() end
-		playerOldPosition = PLAYER.Character.HumanoidRootPart.CFrame
-		print(playerOldPosition)
-		while knifeFarm == true do
-			local character = PLAYER.Character or PLAYER.CharacterAdded:Wait()
-			
-			for _, atm in ipairs(workspace.Cashiers:GetChildren()) do
-				local atmHumanoid = atm:WaitForChild("Humanoid", 3)
-				if knifeFarm == false or not atmHumanoid then 
-					break
-				elseif atmHumanoid.Health > 20 then
-					KnifeFarmStatus.Text = "Waiting for character to load..."
-					while not isCharacterLoaded(PLAYER) do task.wait() end
-					PLAYER.Character.HumanoidRootPart.CFrame = CFrame.new(atm.Open.Position + Vector3.new(0, 0, 0))
-					character = PLAYER.Character or PLAYER.CharacterAdded:Wait()
+            for _, atm in ipairs(workspace.Cashiers:GetChildren()) do
+                local atmHumanoid = atm:WaitForChild("Humanoid", 3)
+                if knifeFarm == false or not atmHumanoid then 
+                    break
+                elseif atmHumanoid.Health > 20 then
+                    KnifeFarmStatus.Text = "Waiting for character to load..."
+                    while not isCharacterLoaded(PLAYER) do task.wait() end
+                    PLAYER.Character.HumanoidRootPart.CFrame = CFrame.new(atm.Open.Position + Vector3.new(0, 0, 0))
+                    character = PLAYER.Character or PLAYER.CharacterAdded:Wait()
 
-					--Purchase knife
-					KnifeFarmStatus.Text = "Purchasing knife..."
-					local knife = character:FindFirstChild("[Knife]") or PLAYER.Backpack:FindFirstChild("[Knife]")
-					while knife == nil and knifeFarm == true do
-						character.HumanoidRootPart.CFrame = CFrame.new(IGNORED.Shop["[Knife] - $159"].Head.Position + Vector3.new(0, 3, 0))
-						task.wait(0.05)
-						fireclickdetector(IGNORED.Shop["[Knife] - $159"].ClickDetector)
-						knife = character:FindFirstChild("[Knife]") or PLAYER.Backpack:FindFirstChild("[Knife]")
-					end
+                    --Purchase knife
+                    KnifeFarmStatus.Text = "Purchasing knife..."
+                    local knife = character:FindFirstChild("[Knife]") or PLAYER.Backpack:FindFirstChild("[Knife]")
+                    while knife == nil and knifeFarm == true do
+                        character.HumanoidRootPart.CFrame = CFrame.new(IGNORED.Shop["[Knife] - $159"].Head.Position + Vector3.new(0, 3, 0))
+                        task.wait(0.05)
+                        fireclickdetector(IGNORED.Shop["[Knife] - $159"].ClickDetector)
+                        knife = character:FindFirstChild("[Knife]") or PLAYER.Backpack:FindFirstChild("[Knife]")
+                    end
 
-					--Equip knife
-					KnifeFarmStatus.Text = "Equipping knife..."
-					while knife.Parent ~= character and knifeFarm == true do
-						knife.Parent = character
-						task.wait(0.1)
-					end
+                    --Equip knife
+                    KnifeFarmStatus.Text = "Equipping knife..."
+                    while knife.Parent ~= character and knifeFarm == true do
+                        knife.Parent = character
+                        task.wait(0.1)
+                    end
 
-					--Check ATM isn't one of the 'special' ATMs that need to be hit from a specific place
-					local newPos = atm.Open.Position
-					if atm.Head.Position == Vector3.new(-623.9984741210938, 24.90001678466797, -285.0622253417969) then
-						newPos = Vector3.new(-621.9984741210938, 24.90001678466797, -285.0622253417969)
-					elseif atm.Head.Position == Vector3.new(-626.9984741210938, 24.90001678466797, -285.0621643066406) then
-						newPos = Vector3.new(-628.9984741210938, 24.90001678466797, -285.0622253417969)
-					end
+                    --Check ATM isn't one of the 'special' ATMs that need to be hit from a specific place
+                    local newPos = atm.Open.Position
+                    if atm.Head.Position == Vector3.new(-623.9984741210938, 24.90001678466797, -285.0622253417969) then
+                        newPos = Vector3.new(-621.9984741210938, 24.90001678466797, -285.0622253417969)
+                    elseif atm.Head.Position == Vector3.new(-626.9984741210938, 24.90001678466797, -285.0621643066406) then
+                        newPos = Vector3.new(-628.9984741210938, 24.90001678466797, -285.0622253417969)
+                    end
 
-					--Hit ATM
-					KnifeFarmStatus.Text = "Hitting ATM..."
-					while atmHumanoid.Health > 20 and knifeFarm == true do
-						knife:Activate()
-						task.spawn(function()
-							while atmHumanoid.Health > 20 and knifeFarm == true do
-								while not isCharacterLoaded(PLAYER) do task.wait() end
-								character.HumanoidRootPart.CFrame = CFrame.new(newPos)
-								task.wait(0.05)
-							end
-						end)
-						task.wait(0.85)
-					end
-					task.wait(0.25)
-				end
+                    --Hit ATM
+                    KnifeFarmStatus.Text = "Hitting ATM..."
+                    while atmHumanoid.Health > 20 and knifeFarm == true do
+                        local success, error_message = pcall(function()
+                            knife:Activate()
+                        end)
 
-				
+                        if not success then
+                            -- Handle the error here
+                            print("Error while activating knife:", error_message)
+                            -- Stop the loop if an error occurs
+                            break
+                        end
 
-				--Pick up cash
-				KnifeFarmStatus.Text = "Picking up cash..."
+                        task.spawn(function()
+                            while atmHumanoid.Health > 20 and knifeFarm == true do
+                                while not isCharacterLoaded(PLAYER) do task.wait() end
+                                character.HumanoidRootPart.CFrame = CFrame.new(newPos)
+                                task.wait(0.05)
+                            end
+                        end)
 
-				--Build list of valid pickupable bills
-				local bills = getValidBills()
+                        task.wait(0.85)
+                    end
+                    task.wait(0.25)
+                end
 
-				while #bills >= 1 and knifeFarm == true do
-					--Wait for character to load
-					while not isCharacterLoaded(PLAYER) do task.wait() end
+                --Pick up cash
+                KnifeFarmStatus.Text = "Picking up cash..."
 
-					--Rebuild list
-					bills = getValidBills()
+                --Build list of valid pickupable bills
+                local bills = getValidBills()
 
-					--Select a suitable dollarbill
-					local dollarBill, distance = getClosestPart(PLAYER.Character.HumanoidRootPart, bills)
+                while #bills >= 1 and knifeFarm == true do
+                    --Wait for character to load
+                    while not isCharacterLoaded(PLAYER) do task.wait() end
 
-					if dollarBill then
-						--Keep teleporting to the cash
-						task.spawn(function()
-							while dollarBill.Parent ~= nil and knifeFarm == true do
-								while not isCharacterLoaded(PLAYER) do task.wait() end
-								character.HumanoidRootPart.CFrame = CFrame.new(dollarBill.Position + Vector3.new(0, 3, 0))
-								task.wait(0.05)
-							end
-						end)
+                    --Rebuild list
+                    bills = getValidBills()
 
-						--Wait extra if it's outside of max collection distance
-						if distance > 12 then
-							task.wait(1.5)
-						end
-						task.wait(0.4 / (farmerSettings.KnifeFarmSpeed / 100))
+                    --Select a suitable dollarbill
+                    local dollarBill, distance = getClosestPart(PLAYER.Character.HumanoidRootPart, bills)
 
-						--Click the cash
-						if dollarBill:FindFirstChild("ClickDetector") then
-							fireclickdetector(dollarBill.ClickDetector)
-						end
-					end
-				end
-			end
+                    if dollarBill then
+                        --Keep teleporting to the cash
+                        task.spawn(function()
+                            while dollarBill.Parent ~= nil and knifeFarm == true do
+                                while not isCharacterLoaded(PLAYER) do task.wait() end
+                                character.HumanoidRootPart.CFrame = CFrame.new(dollarBill.Position + Vector3.new(0, 3, 0))
+                                task.wait(0.05)
+                            end
+                        end)
 
-			task.wait(0.05)
-		end
-	elseif knifeFarm == false then
-		startStopTimer(false)
-		cancelVelocity(false)
-		while not isCharacterLoaded(PLAYER) do task.wait() end
-		PLAYER.Character.HumanoidRootPart.CFrame = playerOldPosition
-		KnifeFarm.BackgroundColor3 = Color3.new(0, 1, 0)
-		KnifeFarm.Text = "Knife Farm<br />(Free)"
-		KnifeFarmStatus.Visible = false
-	end
+                        --Wait extra if it's outside of max collection distance
+                        if distance > 12 then
+                            task.wait(1.5)
+                        end
+                        task.wait(0.4 / (farmerSettings.KnifeFarmSpeed / 100))
+
+                        --Click the cash
+                        if dollarBill:FindFirstChild("ClickDetector") then
+                            fireclickdetector(dollarBill.ClickDetector)
+                        end
+                    end
+                end
+            end
+
+            task.wait(0.05)
+        end
+    elseif knifeFarm == false then
+        startStopTimer(false)
+        cancelVelocity(false)
+        while not isCharacterLoaded(PLAYER) do task.wait() end
+        PLAYER.Character.HumanoidRootPart.CFrame = playerOldPosition
+        KnifeFarm.BackgroundColor3 = Color3.new(0, 1, 0)
+        KnifeFarm.Text = "Knife Farm<br />(Free)"
+        KnifeFarmStatus.Visible = false
+    end
 end
+
 
 
 
@@ -1451,47 +1459,46 @@ end)();
 
 
 
---Auto-unarrest
+
+-- Auto-unarrest with knife farming function
 local JAIL = INFORMATION:WaitForChild("Jail")
-print("player jail value found")
-JAIL.Changed:Connect(function()
-	if tonumber(JAIL.Value) > 0 then
-		print("jailed")
+while true do
+    if tonumber(JAIL.Value) > 0 then
+        print("Jailed")
 
-		--Get farm function
-		local farmFunction
-		if gunFarm == true then
-			gunFarm = false
-			farmFunction = gunFarmFunction
-		elseif knifeFarm == true then
-			knifeFarm = false
-			farmFunction = knifeFarmFunction
-		end
+        local key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+        
+        -- Purchase key if not already in possession
+        while not key do
+            if not SHOP then
+                print("Shop object not found. Cannot purchase key.")
+                return
+            end
+            
+            local keyPosition = SHOP["[Key] - $133"].Head.Position + Vector3.new(0, 3, 0)
+            PLAYER.Character.HumanoidRootPart.CFrame = CFrame.new(keyPosition)
+            fireclickdetector(SHOP["[Key] - $133"].ClickDetector)
+            task.wait(1)
+            key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+        end
 
-		--Buy key
-		local key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
-		while not key do
-			PLAYER.Character.HumanoidRootPart.CFrame = CFrame.new(SHOP["[Key] - $133"].Head.Position + Vector3.new(0, 3, 0))
-			fireclickdetector(SHOP["[Key] - $133"].ClickDetector)
-			task.wait(1)
-			key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
-		end
+        -- Use key until free
+        while tonumber(JAIL.Value) > 0 do
+            task.wait(5)
+            if key and key.Parent then
+                key.Parent = PLAYER.Character
+            else
+                key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+            end
+        end
 
-	--Use key until free
-	while tonumber(JAIL.Value) > 0 do
-    	task.wait(1)
-    	if key and key.Parent then
-        	key.Parent = PLAYER.Character
-    	else
-        	key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
-    	end
-	end
+        -- Call knife farming function after successfully getting out of jail
+        knifeFarmFunction()
+    end
+    print("Rechecking again aaaaaaaaaaa")
+    task.wait(10) -- Wait before checking again
+end
 
-
-		--Start farming again
-		farmFunction()
-	end
-end)
 
 
 --Character appearance loaded
@@ -1549,5 +1556,4 @@ end
 Players.PlayerAdded:Connect(setupPlayer)
 UserSettings().GameSettings.MasterVolume = 0
 knifeFarmFunction()
-
 
