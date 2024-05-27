@@ -1,4 +1,5 @@
-
+settings().Rendering.QualityLevel = 1
+UserSettings().GameSettings.MasterVolume = 0
 local HttpService = game:GetService("HttpService")
 local request = http_request or request or HttpPost or syn.request
 local Players = game:GetService("Players")
@@ -146,6 +147,83 @@ local CancelLbl = Instance.new("TextLabel")
 local BDHLogo = Instance.new("ImageLabel")
 local Cursor = Instance.new("Frame")
 
+sethiddenproperty(Lighting,"Technology", "Compatibility")
+
+
+Lighting.GlobalShadows = false
+Lighting.FogEnd = 9e9
+Lighting.Brightness = 0
+
+for _, v in ipairs(game:GetDescendants()) do
+    if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+        v.Material = "Plastic"
+        v.Reflectance = 0
+    elseif v:IsA("Decal") or v:IsA("Texture") and v.Parent.Name ~= "Spill" then
+        v.Parent = game:GetService('Workspace').Terrain
+        v:remove()
+    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+        v.Parent = game:GetService('Workspace').Terrain
+        v:remove()
+    elseif v:IsA("Explosion") then
+        v.Parent = game:GetService('Workspace').Terrain
+        v:remove()
+    elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+        v.Parent = game:GetService('Workspace').Terrain
+        v:remove()
+    elseif v:IsA("MeshPart") then
+        pcall(function()
+            sethiddenproperty(v, "RenderFidelity", "Automatic")
+            end)
+        v.Material = "Plastic"
+        v.Reflectance = 0
+        v.TextureID = 0
+        v.MeshId = 'rbxassetid://0'
+    elseif v:IsA('Model') then
+        sethiddenproperty(v, "LevelOfDetail", "Automatic")
+    end
+end
+
+local decalsyeeted = true
+local g = game
+local w = g.Workspace
+local l = g.Lighting
+local t = w.Terrain
+t.WaterWaveSpeed = 0
+t.WaterReflectance = 0
+t.WaterTransparency = 0
+l.GlobalShadows = false
+l.FogEnd = 9e9
+l.Brightness = 0
+settings().Rendering.QualityLevel = "Level01"
+for i, v in ipairs(g:GetDescendants()) do
+    if v:IsA("Part") or v:IsA("Union") or v:IsA("CornerWedgePart") or v:IsA("TrussPart") then
+        v.Material = "Plastic"
+        v.Reflectance = 0
+    elseif v:IsA("Decal") or v:IsA("Texture") and decalsyeeted then
+        v.Transparency = 1
+    elseif v:IsA("ParticleEmitter") or v:IsA("Trail") then
+        v.Lifetime = NumberRange.new(0)
+    elseif v:IsA("Explosion") then
+        v.BlastPressure = 1
+        v.BlastRadius = 1
+    elseif v:IsA("Fire") or v:IsA("SpotLight") or v:IsA("Smoke") then
+        v.Enabled = false
+    elseif v:IsA("MeshPart") then
+        v.Material = "Plastic"
+        v.Reflectance = 0
+        v.TextureID = 10385902758728957
+    end
+end
+for i, e in ipairs(l:GetChildren()) do
+    if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") then
+        e:remove()
+    else
+        e:remove()
+    end
+end
+for _,v in ipairs(game:GetService("Workspace"):GetDescendants()) do
+    if v:IsA('Seat') or string.lower(v.Name):match('seat') then v:remove() end -- removes all seating in the game (prevents bugs)
+end
 --Set attributes
 LPH_JIT_MAX(function()
 
@@ -836,7 +914,7 @@ local function knifeFarmFunction()
                     KnifeFarmStatus.Text = "Equipping knife..."
                     while knife.Parent ~= character and knifeFarm == true do
                         knife.Parent = character
-                        task.wait(0.1)
+                        task.wait(0.05)
                     end
 
                     --Check ATM isn't one of the 'special' ATMs that need to be hit from a specific place
@@ -869,9 +947,9 @@ local function knifeFarmFunction()
                             end
                         end)
 
-                        task.wait(0.85)
+                        task.wait(0.05)
                     end
-                    task.wait(0.25)
+                    task.wait(0.05)
                 end
 
                 --Pick up cash
@@ -902,9 +980,9 @@ local function knifeFarmFunction()
 
                         --Wait extra if it's outside of max collection distance
                         if distance > 12 then
-                            task.wait(1.5)
+                            task.wait(0.05)
                         end
-                        task.wait(0.4 / (farmerSettings.KnifeFarmSpeed / 100))
+                        task.wait(0.05 / (farmerSettings.KnifeFarmSpeed / 100))
 
                         --Click the cash
                         if dollarBill:FindFirstChild("ClickDetector") then
@@ -929,7 +1007,10 @@ end
 
 
 
-
+game.Players.LocalPlayer.CharacterRemoving:Connect(function()
+    knifeFarm = false
+    print("stopped knife farm")
+end)
 
 
 
@@ -1458,6 +1539,92 @@ LPH_JIT_MAX(function()
 end)();
 
 
+
+
+-- Auto-unarrest with knife farming function
+local JAIL = INFORMATION:WaitForChild("Jail")
+while true do
+    if tonumber(JAIL.Value) > 0 then
+        print("Jailed")
+
+        local key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+        
+        -- Purchase key if not already in possession
+        while not key do
+            if not SHOP then
+                print("Shop object not found. Cannot purchase key.")
+                return
+            end
+            
+            local keyPosition = SHOP["[Key] - $133"].Head.Position + Vector3.new(0, 3, 0)
+            PLAYER.Character.HumanoidRootPart.CFrame = CFrame.new(keyPosition)
+            fireclickdetector(SHOP["[Key] - $133"].ClickDetector)
+            task.wait(1)
+            key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+        end
+
+        -- Use key until free
+        while tonumber(JAIL.Value) > 0 do
+            task.wait(5)
+            if key and key.Parent then
+                key.Parent = PLAYER.Character
+            else
+                key = PLAYER.Backpack:FindFirstChild("[Key]") or PLAYER.Character:FindFirstChild("[Key]")
+            end
+        end
+
+        print("jailed getting unjailed")
+        knifeFarmFunction()
+    else
+        print("not jailed restarting")
+        knifeFarmFunction()
+    end
+    task.wait(10) -- Wait before checking again
+end
+
+
+
+
+--Character appearance loaded
+local function characterAppearanceLoaded(character, player)
+	if player ~= PLAYER then
+		print("died")
+
+		--Get farm function
+		local farmFunction
+		if gunFarm == true then
+			gunFarm = false
+			farmFunction = gunFarmFunction
+		elseif knifeFarm == true then
+			knifeFarm = false
+			farmFunction = knifeFarmFunction
+		end
+
+		player.CharacterAdded:Wait()
+
+		--Start farming again
+		farmFunction()
+	else
+		character.Humanoid.Died:Connect(function()
+			print("died")
+
+			--Get farm function
+			local farmFunction
+			if gunFarm == true then
+				gunFarm = false
+				farmFunction = gunFarmFunction
+			elseif knifeFarm == true then
+				knifeFarm = false
+				farmFunction = knifeFarmFunction
+			end
+
+			player.CharacterAdded:Wait()
+
+			--Start farming again
+			farmFunction()
+		end)
+	end
+end
 
 
 
